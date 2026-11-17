@@ -1,0 +1,96 @@
+{
+  "$comment": "言語共通のテストベクタ。TS は packages/js/test/vectors.test.ts が読む。バイト列は 16 進・空白区切り。出典: kubi 2.0 BLE 仕様 v1.7（2026-10-08）と実機確認（0° = 512）。",
+
+  "degToRaw": [
+    { "deg": 0, "raw": 512, "note": "正面 = 512（511.5 を丸める）" },
+    { "deg": -150, "raw": 0, "note": "pan の下限" },
+    { "deg": 150, "raw": 1023, "note": "pan の上限" },
+    { "deg": 30, "raw": 614 },
+    { "deg": -20, "raw": 443, "note": "tilt の下限（実機の可動範囲）" },
+    { "deg": 40, "raw": 648, "note": "tilt の上限（実機の可動範囲）" },
+    { "deg": 200, "raw": 1023, "note": "範囲外は端に留める" },
+    { "deg": -200, "raw": 0, "note": "範囲外は端に留める" }
+  ],
+
+  "rawToDeg": [
+    { "raw": 512, "deg": 0.1466, "tolerance": 0.001, "note": "512 はちょうど 0° ではない（量子化）" },
+    { "raw": 0, "deg": -150, "tolerance": 0.001 },
+    { "raw": 1023, "deg": 150, "tolerance": 0.001 },
+    { "raw": 614, "deg": 30.0587, "tolerance": 0.001 }
+  ],
+
+  "degPerSecToRaw": [
+    { "degPerSec": 60, "raw": 90, "note": "既定速度" },
+    { "degPerSec": 45, "raw": 68 },
+    { "degPerSec": 0.1, "raw": 1, "note": "下限より小さい正の値は 1 に丸める（0 は書かない）" },
+    { "degPerSec": 10000, "raw": 156, "note": "上限（保証範囲の上端 156）に留める" },
+    { "degPerSec": -60, "raw": 90, "note": "符号は捨てる（向きは到達点が決める）" }
+  ],
+
+  "rawToDegPerSec": [
+    { "raw": 90, "degPerSec": 59.94, "tolerance": 0.001 },
+    { "raw": 1, "degPerSec": 0.666, "tolerance": 0.001 }
+  ],
+
+  "encodeGoal": [
+    { "raw": 512, "bytes": "02 00", "note": "上位が先" },
+    { "raw": 0, "bytes": "00 00" },
+    { "raw": 1023, "bytes": "03 FF" },
+    { "raw": 614, "bytes": "02 66" }
+  ],
+
+  "encodeRegisterWrite2": [
+    { "axis": "pan", "register": 32, "value": 90, "bytes": "01 20 5A 00", "note": "pan の速度 90（下位が先）" },
+    { "axis": "tilt", "register": 32, "value": 68, "bytes": "02 20 44 00" },
+    { "axis": "pan", "register": 32, "value": 1023, "bytes": "01 20 FF 03" }
+  ],
+
+  "encodeRegisterRead": [
+    { "axis": "pan", "register": 36, "bytes": "01 24", "note": "pan の現在位置を読んで、という依頼" },
+    { "axis": "tilt", "register": 36, "bytes": "02 24" }
+  ],
+
+  "decodeRegisterReadResponse": [
+    { "bytes": "01 24 02 00 02", "axis": "pan", "register": 36, "value": 512, "note": "仕様書 7.7.7.1 の例" },
+    { "bytes": "02 24 02 B7 01", "axis": "tilt", "register": 36, "value": 439, "note": "レクチャーの実機例" },
+    { "bytes": "01 24 02 FF 03", "axis": "pan", "register": 36, "value": 1023 },
+    { "bytes": "03 24 02 00 02", "result": null, "note": "motor id 3 は無い" },
+    { "bytes": "01 24", "result": null, "note": "短すぎる" }
+  ],
+
+  "decodeBatteryVoltage": [
+    { "bytes": "74 0E", "mV": 3700, "note": "仕様書 7.8.1.1 の例（下位が先）" },
+    { "bytes": "00 00", "mV": 0 },
+    { "bytes": "74", "result": null, "note": "短すぎる" }
+  ],
+
+  "decodeServoErrorFlags": [
+    { "bytes": "20", "inputVoltage": false, "overheating": false, "electricalShock": false, "overload": true, "note": "仕様書 7.8.2.1 の例" },
+    { "bytes": "20 00", "inputVoltage": false, "overheating": false, "electricalShock": false, "overload": true, "note": "2 byte 目は無視する（意味は実機で確かめる）" },
+    { "bytes": "05", "inputVoltage": true, "overheating": true, "electricalShock": false, "overload": false },
+    { "bytes": "10", "inputVoltage": false, "overheating": false, "electricalShock": true, "overload": false },
+    { "bytes": "00", "inputVoltage": false, "overheating": false, "electricalShock": false, "overload": false, "note": "エラー無し" },
+    { "bytes": "", "result": null }
+  ],
+
+  "decodeServoErrorAxis": [
+    { "bytes": "01", "axis": "pan" },
+    { "bytes": "02 00", "axis": "tilt", "note": "2 byte 目は無視する" },
+    { "bytes": "00", "result": null }
+  ],
+
+  "decodeBatteryStatus": [
+    { "bytes": "01", "charging": false, "low": false, "note": "通常（bit 0 は常にオン）" },
+    { "bytes": "09", "charging": true, "low": false, "note": "充電中" },
+    { "bytes": "05", "charging": false, "low": true, "note": "残量低下" },
+    { "bytes": "0D", "charging": true, "low": true, "note": "充電中かつ残量低下" },
+    { "bytes": "03", "charging": false, "low": false, "note": "bit 1（critical）は公開面に現れない" },
+    { "bytes": "", "result": null }
+  ],
+
+  "decodeButton": [
+    { "bytes": "01", "pressed": true },
+    { "bytes": "00", "pressed": false },
+    { "bytes": "", "result": null }
+  ]
+}

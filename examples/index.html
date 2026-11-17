@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>kubi-sdk examples</title>
+<link rel="icon" href="data:,">
+<!-- サンプルコードは `import … from 'kubi-sdk'` と書く。このリポジトリの中では、ビルドした dist を指す。 -->
+<script type="importmap">{ "imports": { "kubi-sdk": "../packages/js/dist/index.js" } }</script>
+<style>
+  :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+  body { margin: 0; padding: 16px; max-width: 760px; margin-inline: auto; line-height: 1.6; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h2 { font-size: 16px; margin: 28px 0 4px; }
+  .muted { color: #777; font-size: 13px; }
+  .bar { position: sticky; top: 0; z-index: 1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 0; background: Canvas; border-bottom: 1px solid #8884; }
+  button { padding: 6px 12px; font: inherit; border-radius: 6px; border: 1px solid #8886; background: #8881; cursor: pointer; }
+  button.primary { border-color: #36c; color: #36c; font-weight: 600; }
+  button:disabled { opacity: 0.5; cursor: default; }
+  section { border: 1px solid #8884; border-radius: 8px; padding: 10px 14px; margin: 10px 0; }
+  section h3 { font-size: 14px; margin: 0 0 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  section h3 a { font-family: system-ui, sans-serif; font-weight: 400; font-size: 12px; color: #36c; text-decoration: none; }
+  pre { background: #8881; padding: 8px 10px; border-radius: 6px; font-size: 12.5px; line-height: 1.5; overflow: auto; margin: 0; }
+  .run { display: flex; gap: 8px; align-items: flex-start; margin-top: 6px; }
+  .run pre { flex: 1; min-height: 1.5em; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .run pre.err { color: #c33; }
+</style>
+</head>
+<body>
+<h1>kubi-sdk examples</h1>
+<p class="muted">メソッドごとのサンプルコード。1 つが 1 ファイル（この <code>examples/</code> フォルダの <code>.js</code>）で、コードはそのまま自分のアプリへ写して使える。「実行」を押すと、下に <code>console.log</code> の出力が出る。コメントの値はある 1 台のもので、お使いの本体では異なる。<a href="../demo/">デモ</a> ・ <a href="../demo/docs.html">API リファレンス</a></p>
+
+<div class="bar">
+  <button id="connect" class="primary">connect</button>
+  <button id="disconnect">disconnect</button>
+  <span id="conn" class="muted">disconnected</span>
+  <span id="device" class="muted"></span>
+</div>
+
+<main id="list">読み込み中…</main>
+
+<script type="module" src="./run.js"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>kubi-sdk web demo</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+  body { margin: 0; padding: 16px; max-width: 760px; margin-inline: auto; line-height: 1.6; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .muted { color: #777; font-size: 13px; }
+  .range { color: #777; font-size: 12px; }
+  section { border: 1px solid #8884; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+  section h2 { font-size: 15px; margin: 0 0 2px; }
+  section h2 + .muted { margin: 0 0 8px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0; }
+  button { padding: 6px 12px; font: inherit; border-radius: 6px; border: 1px solid #8886; background: #8881; cursor: pointer; }
+  button.primary { border-color: #36c; color: #36c; font-weight: 600; }
+  input[type=number] { width: 76px; font: inherit; padding: 4px 6px; }
+  pre { background: #8881; padding: 8px 10px; border-radius: 6px; font-size: 12px; overflow: auto; max-height: 220px; margin: 0; }
+
+  /* 入力（write）と出力（read）の 2 段。それぞれ、ボタンの行と、その下の結果 */
+  section h3 { font-size: 14px; margin: 14px 0 4px; }
+  .io { display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; margin: 4px 0 0; }
+  .io dt { color: #777; font-size: 13px; padding-top: 8px; }
+  .io dd { margin: 0; }
+  .io .row { margin: 0; }
+  .res { margin: 4px 0 0; padding: 6px 10px; background: #8881; border-radius: 6px; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .res.err { color: #c33; }
+</style>
+</head>
+<body>
+<h1>kubi-sdk web demo</h1>
+<p class="muted"><a href="./docs.html">API リファレンス</a> ・ <a href="./docs.html?doc=guide&amp;lang=ja">ガイド</a> ・ <a href="../examples/">メソッドごとのサンプルコード</a>（別ページ）</p>
+<p class="muted">Chrome / Edge で <code>localhost</code> か HTTPS から開くこと（<code>pnpm demo</code> はビルドしてから配る）。上から順に使う。<b>入力</b>は本体へ書く値（write）、<b>出力</b>は本体から読んだ値（read）。それぞれの下に、結果と本体とやり取りしたバイト列を出す。</p>
+
+<section>
+  <h2>1. connect</h2>
+  <p class="muted">ブラウザーのデバイス選択ダイアログで kubi を 1 台選ぶ。</p>
+  <div class="row">
+    <button id="connect" class="primary">connect</button>
+    <button id="disconnect">disconnect</button>
+    <span id="conn" class="muted">disconnected</span>
+    <span id="avail" class="muted"></span>
+    <span id="device" class="muted"></span>
+  </div>
+  <div class="res" id="connect-res">–</div>
+</section>
+
+<section>
+  <h2>2. 基本 info（Device Information <code>0x180A</code>）</h2>
+  <p class="muted">シリアル番号・型番・製造者・ハードウェア版・ファームウェア版を本体から読む。</p>
+  <dl class="io">
+    <dt>出力</dt>
+    <dd><div class="row"><button id="readDeviceInfo">readDeviceInfo</button></div><div class="res" id="readDeviceInfo-res">–</div></dd>
+  </dl>
+</section>
+
+<section>
+  <h2>3. 基本 API</h2>
+  <p class="muted">1 回の呼び出し = 本体への操作 1 つ。入力（write）は首が着くのを待たない。位置は出力（read）を押すまで分からない。速度は<b>次に目標を書いたとき</b>から効く。</p>
+
+  <h3>pan</h3>
+  <dl class="io">
+    <dt>入力</dt>
+    <dd><div class="row"><input id="pan" type="number" value="30" step="1"> ° <span class="range">−150〜150</span> <button id="writePanGoal">writePanGoal</button></div><div class="res" id="writePanGoal-res">–</div></dd>
+    <dt>出力</dt>
+    <dd><div class="row"><button id="readPan">readPan</button></div><div class="res" id="readPan-res">–</div></dd>
+  </dl>
+
+  <h3>tilt</h3>
+  <dl class="io">
+    <dt>入力</dt>
+    <dd><div class="row"><input id="tilt" type="number" value="10" step="1"> ° <span class="range">−20〜40</span> <button id="writeTiltGoal">writeTiltGoal</button></div><div class="res" id="writeTiltGoal-res">–</div></dd>
+    <dt>出力</dt>
+    <dd><div class="row"><button id="readTilt">readTilt</button></div><div class="res" id="readTilt-res">–</div></dd>
+  </dl>
+
+  <h3>pan の速度</h3>
+  <dl class="io">
+    <dt>入力</dt>
+    <dd><div class="row"><input id="panSpeed" type="number" value="30" step="5"> °/s <span class="range">0.67〜104（既定 60）</span> <button id="writePanSpeed">writePanSpeed</button></div><div class="res" id="writePanSpeed-res">–</div></dd>
+    <dt>出力</dt>
+    <dd><div class="row"><button id="speedPan">kubi.speed.pan</button> <span class="muted">最後に書いた設定。速度は本体から読めない（読んでも書いた値が返るだけ）</span></div><div class="res" id="speedPan-res">–</div></dd>
+  </dl>
+
+  <h3>tilt の速度</h3>
+  <dl class="io">
+    <dt>入力</dt>
+    <dd><div class="row"><input id="tiltSpeed" type="number" value="30" step="5"> °/s <span class="range">0.67〜104（既定 60）</span> <button id="writeTiltSpeed">writeTiltSpeed</button></div><div class="res" id="writeTiltSpeed-res">–</div></dd>
+    <dt>出力</dt>
+    <dd><div class="row"><button id="speedTilt">kubi.speed.tilt</button> <span class="muted">最後に書いた設定</span></div><div class="res" id="speedTilt-res">–</div></dd>
+  </dl>
+</section>
+
+<section>
+  <h2>4. バッテリ情報</h2>
+  <p class="muted">電圧（mV）は本体から読む。状態（充電中か・残りが少ないか）は本体が変化を知らせてくる。残量の % は SDK が出していない。</p>
+  <dl class="io">
+    <dt>出力</dt>
+    <dd><div class="row"><button id="readBatteryVoltage">readBatteryVoltage</button></div><div class="res" id="readBatteryVoltage-res">–</div></dd>
+    <dt>出力</dt>
+    <dd><div class="row"><button id="batteryStatus">kubi.batteryStatus</button> <span class="muted">USB を抜き差しすると自動で更新する</span></div><div class="res" id="batteryStatus-res">–</div></dd>
+  </dl>
+</section>
+
+<section>
+  <h2>ログ</h2>
+  <div class="row"><label><input id="diag" type="checkbox"> 診断（送受信バイト列）も出す</label> <button id="clear">clear</button> <button id="save">ログを保存（.txt）</button></div>
+  <pre id="log"></pre>
+</section>
+
+<script type="module" src="./demo.js"></script>
+</body>
+</html>

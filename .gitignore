@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+.DS_Store
+*.log
+
+# Owner-made PDFs of the README. Not source; must not ship (npm always bundles README*)
+packages/js/README*.pdf
